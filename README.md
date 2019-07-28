@@ -43,7 +43,7 @@ CPU: Intel core i7
 ############################ To Run #####################################
 
 1. Use TensorKeras environment. Activate using: 
-    PS : . C:\AKRAM-Local\PythonEnvs\TensorKeras\Scripts\activate.ps1
+    PS : . ..\PythonEnvs\TensorKeras\Scripts\activate.ps1
 
 2. Install the relevant packages from "requirements.txt"
     pip install -r requirements.txt
