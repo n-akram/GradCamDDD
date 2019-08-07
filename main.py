@@ -29,7 +29,7 @@ MOBILE = False
 nb_classes = 10
 if '-m' in sys.argv:
     MOBILE = True
-    nb_classes = 6
+    nb_classes = 5
 
 def checkShape(model):
     s = []
@@ -43,7 +43,7 @@ def checkShape(model):
 
 modelPath = 'sampleModel/'
 sampleImg = 'c1_img_115.jpg' # training set
-#sampleImg ='c3_img_8.jpg' # test set
+sampleImg2 ='c3_img_8.jpg' # test set
 
 def convertIntToClass(n):
     return("c"+str(n))
@@ -74,9 +74,11 @@ def register_gradient():
             return grad * tf.cast(grad > 0., dtype) * \
                 tf.cast(op.inputs[0] > 0., dtype)
 
-def compile_saliency_function(model, activation_layer='block5_conv3'):
+# block5_conv3 is the last convolution layer
+def compile_saliency_function(model, activation_layer='max_pooling2d_3'):
     input_img = model.input
-    layer_dict = dict([(layer.name, layer) for layer in model.layers[1:]])
+    layer_dict = dict([(layer.name, layer) for layer in model.layers[0:]])
+    #print(layer_dict)
     layer_output = layer_dict[activation_layer].output
     max_output = K.max(layer_output, axis=3)
     saliency = K.gradients(K.sum(max_output), input_img)[0]
@@ -176,8 +178,11 @@ def grad_cam(input_model, image, category_index, layer_name):
     cam = 255 * cam / np.max(cam)
     return np.uint8(cam), heatmap
 
-img = cv2.imread(sampleImg)#, target_size=(150, 150))
-resized_image = cv2.resize(img, (150, 150))
+if '-t' in sys.argv:
+    img = cv2.imread(sampleImg2)
+else:
+    img = cv2.imread(sampleImg)
+resized_image = cv2.resize(img, (150, 150)) #, target_size=(150, 150))
 norm_image = cv2.normalize(resized_image, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F) #input was normalized
 normal = np.expand_dims(resized_image, axis=0)
 preprocessed_input = np.expand_dims(norm_image, axis=0)
@@ -208,13 +213,13 @@ else:
     gnam = "train"+gnam
 
 
-cam, heatmap = grad_cam(model, preprocessed_input, predicted_class, "max_pooling2d_3")# block5_conv3 conv2d_3
+cam, heatmap = grad_cam(model, preprocessed_input, predicted_class, "max_pooling2d_3")# conv2d_1, max_pooling2d_1 and so on
 cv2.imwrite(nam, cam)
 
 register_gradient()
 guided_model = modify_backprop(model, 'GuidedBackProp')
-#print(guided_model.summary())
-saliency_fn = compile_saliency_function(guided_model, "max_pooling2d_3") # guided_model
+print(guided_model.summary())
+saliency_fn = compile_saliency_function(guided_model, "max_pooling2d_1") # guided_model: conv2d_1, max_pooling2d_1 and so on
 saliency = saliency_fn([preprocessed_input, 0])
 gradcam = saliency[0] * heatmap[..., np.newaxis]
 cv2.imwrite(gnam, deprocess_image(gradcam))
