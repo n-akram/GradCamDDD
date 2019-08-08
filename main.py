@@ -219,7 +219,7 @@ cv2.imwrite(nam, cam)
 register_gradient()
 guided_model = modify_backprop(model, 'GuidedBackProp')
 print(guided_model.summary())
-saliency_fn = compile_saliency_function(guided_model, "max_pooling2d_1") # guided_model: conv2d_1, max_pooling2d_1 and so on
+saliency_fn = compile_saliency_function(guided_model, "max_pooling2d_3") # guided_model: conv2d_1, max_pooling2d_1 and so on
 saliency = saliency_fn([preprocessed_input, 0])
 gradcam = saliency[0] * heatmap[..., np.newaxis]
 cv2.imwrite(gnam, deprocess_image(gradcam))

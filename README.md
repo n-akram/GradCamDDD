@@ -49,6 +49,7 @@ CPU: Intel core i7
     pip install -r requirements.txt
 
 3. Run "python main.py" : for grad cam of model trained on all classes using training image
+    Note: add the appropriate model to be tested in the folder 'sampleModel'
 
 5. Run "python main.py -m": for grad cam of model trained on mobile classes using training image
 
